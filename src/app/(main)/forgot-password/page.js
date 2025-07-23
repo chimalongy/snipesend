@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
     setError('');
     setSuccess('');
 
-    if (!email) {
+    if (!email) { 
       setError('Email is required');
       setIsLoading(false);
       return;

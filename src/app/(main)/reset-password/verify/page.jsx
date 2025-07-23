@@ -6,9 +6,10 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { RiSendPlaneFill } from 'react-icons/ri';
 import { apiSumary } from '@/app/utils/apiSummary';
-import {toast} from "react-hot-toast"
+import { toast } from "react-hot-toast";
+import { Suspense } from 'react';
 
-export default function VerifyOTPPage() {
+function VerifyOTPContent() {
   const searchParams = useSearchParams();
   const email = searchParams.get('email') || '';
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -272,5 +273,13 @@ export default function VerifyOTPPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerifyOTPPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <VerifyOTPContent />
+    </Suspense>
   );
 }
