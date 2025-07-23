@@ -2,10 +2,12 @@ import { NextResponse } from "next/server";
 import { createSession } from "@/app/utils/sessions";
 import DBFunctions from "@/app/utils/database/DatabaseFunctions";
 import bcrypt from "bcrypt";
+import { TableCreator } from "@/app/utils/database/tableCreator";
 
 const db = new DBFunctions();
 
 export async function POST(request) {
+  await TableCreator()
   try {
     const { email, password } = await request.json();
 
