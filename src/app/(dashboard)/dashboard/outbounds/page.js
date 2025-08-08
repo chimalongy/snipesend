@@ -15,27 +15,51 @@ import axios from "axios";
 import { apiSumary } from "@/app/utils/apiSummary";
 import useUserStore from "@/app/utils/store/user";
 import useSelectedOutboundStore from "@/app/utils/store/selectedoutbound";
+import toast from "react-hot-toast";
 
 export default function OutboundManagement() {
   const user = useUserStore((state) => state.user);
-   const setSelectedOutbound = useSelectedOutboundStore((state) => state.setSelectedOutbound);
+  const setSelectedOutbound = useSelectedOutboundStore((state) => state.setSelectedOutbound);
   const [campaigns, setCampaigns] = useState([]);
-  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    campaignId: null,
+    campaignName: ""
+  });
   const [expandedEmails, setExpandedEmails] = useState({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleDelete = (id) => {
-    setCampaigns(campaigns.filter((campaign) => campaign.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id) => {
+    try {
+      // Add your API call to delete the campaign here
+      // await axios.delete(`${apiSumary.delete_outbound}/${id}`);
+
+      let response  = await axios.post(apiSumary.delete_outbound, {outbound_id: id})
+       let result = response.data
+        console.log(result)
+       if (!result.success){
+         throw new Error({message: result?.message})
+       }
+      
+      toast.success("Outbound deleted")
+      // Optimistic UI update
+      setCampaigns(campaigns.filter((campaign) => campaign.outbound_id !== id));
+      setDeleteConfirm({ isOpen: false, campaignId: null, campaignName: "" });
+    } catch (error) {
+      console.log("Failed to delete campaign:", error?.message);
+      toast.error(error.message)
+      // You might want to show an error message here
+    }
   };
 
   async function getUserOutbounds() {
+    setIsLoading(true);
     try {
       let result = await axios.post(apiSumary.get_user_outbounds, {
         userId: user.id,
       });
 
       if (result.data.success) {
-        console.log("yoou");
         let campaigns = [];
         let useroutbounds = result.data.data;
 
@@ -43,25 +67,34 @@ export default function OutboundManagement() {
           let outbound_name = useroutbounds[i].outbound_name;
           let list_allocations = JSON.parse(useroutbounds[i].list_allocations);
           let created_at = new Date(useroutbounds[i].created_at).toLocaleString("en-US", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
-          // console.log(list_allocations)
-
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          
+          let receiverscount = 0;
+          for (let i = 0; i < list_allocations.length; i++) {
+            receiverscount += list_allocations[i].list.length;
+          }
+          
           campaigns.push({
+            outbound_id: useroutbounds[i].id,
+            deleted_email_list: useroutbounds[i].deleted_email_list,
+            recipients_count: receiverscount,
             outbound_name,
             list_allocations,
             created_at,
           });
         }
-
-        console.log(campaigns);
         setCampaigns(campaigns);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error fetching campaigns:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -73,6 +106,15 @@ export default function OutboundManagement() {
       ...prev,
       [id]: !prev[id],
     }));
+  };
+
+  const openDeleteModal = (index) => {
+    const campaign = campaigns[index];
+    setDeleteConfirm({
+      isOpen: true,
+      campaignId: campaign.outbound_id,
+      campaignName: campaign.outbound_name
+    });
   };
 
   return (
@@ -107,7 +149,7 @@ export default function OutboundManagement() {
             <div className="ml-5">
               <div className="text-sm text-gray-500">Total Campaigns</div>
               <div className="text-2xl font-semibold text-gray-900">
-                {campaigns.length}
+                {isLoading ? "..." : campaigns.length}
               </div>
             </div>
           </div>
@@ -123,7 +165,6 @@ export default function OutboundManagement() {
               <div className="text-sm text-gray-500">Scheduled Tasks</div>
               <div className="text-2xl font-semibold text-gray-900">
                 0
-                {/* {campaigns.reduce((sum, campaign) => sum + campaign.scheduledTasks, 0)} */}
               </div>
             </div>
           </div>
@@ -138,7 +179,6 @@ export default function OutboundManagement() {
             <div className="ml-5">
               <div className="text-sm text-gray-500">All Tasks</div>
               <div className="text-2xl font-semibold text-gray-900">
-                {/* {campaigns.reduce((sum, campaign) => sum + campaign.totalSent, 0)} */}
                 0
               </div>
             </div>
@@ -152,114 +192,122 @@ export default function OutboundManagement() {
           <h3 className="text-lg font-medium text-gray-900">Your Campaigns</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Campaign Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  From Addresses
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Last Sent
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Total Sent
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {campaigns.map((campaign, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-gray-900">
-                      {campaign.outbound_name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      Created:{" "}
-                      {campaign.created_at}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center">
-                      <div className="text-sm text-gray-500">
-                        {campaign.list_allocations[0].emailAssigned}
+          {isLoading ? (
+            <div className="p-6 text-center text-gray-500">Loading campaigns...</div>
+          ) : campaigns.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              No campaigns found. Create your first campaign to get started.
+            </div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Campaign Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    From Addresses
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Recipients
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Created
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {campaigns.map((campaign, index) => (
+                  <tr key={campaign.outbound_id}>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-900">
+                        {campaign.outbound_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500">
+                          {campaign.list_allocations[0]?.emailAssigned || 'N/A'}
+                          {campaign.list_allocations.length > 1 && (
+                            <span className="text-gray-400 ml-1">
+                              +{campaign.list_allocations.length - 1}
+                            </span>
+                          )}
+                        </div>
                         {campaign.list_allocations.length > 1 && (
-                          <span className="text-gray-400 ml-1">
-                            +{campaign.list_allocations.length - 1}
-                          </span>
+                          <button
+                            onClick={() => toggleEmailExpansion(index)}
+                            className="ml-2 text-gray-400 hover:text-gray-600"
+                            aria-label="Show more emails"
+                          >
+                            <RiMore2Fill className="w-4 h-4" />
+                          </button>
                         )}
                       </div>
-                      {campaign.list_allocations.length > 1 && (
-                        <button
-                          onClick={() => toggleEmailExpansion(index)}
-                          className="ml-2 text-gray-400 hover:text-gray-600"
-                        >
-                          <RiMore2Fill className="w-4 h-4" />
-                        </button>
+                      {expandedEmails[index] && (
+                        <div className="mt-2 space-y-1">
+                          {campaign.list_allocations
+                            .slice(1)
+                            .map((allocation, idx) => (
+                              <div key={idx} className="text-xs text-gray-500">
+                                {allocation.emailAssigned}
+                              </div>
+                            ))}
+                        </div>
                       )}
-                    </div>
-                    {expandedEmails[index] && (
-                      <div className="mt-2 space-y-1">
-                        {campaign.list_allocations
-                          .slice(1)
-                          .map((allocation, idx) => (
-                            <div key={idx} className="text-xs text-gray-500">
-                              {allocation.emailAssigned}
-                            </div>
-                          ))}
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {/* {campaign.lastSent || 'Never'} */}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    {/* {campaign.totalSent.toLocaleString()} */}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
-                    <Link
-                      href={`/dashboard/outbounds/${campaign.outbound_name}`}
-                      className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
-                      title="View"
-                      onClick={setSelectedOutbound(campaign)}
-                    >
-                      <RiEyeLine className="w-4 h-4" />
-                    </Link>
-                    <Link
-                      href={`/dashboard/outbounds/${campaign.outbound_name}/newtask`}
-                      className="text-blue-600 hover:text-blue-900 inline-flex items-center"
-                      title="Schedule"
-                      onClick={setSelectedOutbound(campaign)}
-                    >
-                      <RiCalendarLine className="w-4 h-4" />
-                    </Link>
-                    <button
-                      onClick={() => setDeleteConfirm(index)}
-                      className="text-red-600 hover:text-red-900 inline-flex items-center"
-                      title="Delete"
-                    >
-                      <RiDeleteBinLine className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {campaign.recipients_count.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {campaign.created_at}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <Link
+                        href={`/dashboard/outbounds/${campaign.outbound_name}`}
+                        className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
+                        title="View"
+                        onClick={() => setSelectedOutbound(campaign)}
+                      >
+                        <RiEyeLine className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href={`/dashboard/outbounds/${campaign.outbound_name}/newtask`}
+                        className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                        title="Schedule"
+                        onClick={() => setSelectedOutbound(campaign)}
+                      >
+                        <RiCalendarLine className="w-4 h-4" />
+                      </Link>
+                      <button
+                        onClick={() => openDeleteModal(index)}
+                        className="text-red-600 hover:text-red-900 inline-flex items-center"
+                        title="Delete"
+                        aria-label={`Delete campaign ${campaign.outbound_name}`}
+                      >
+                        <RiDeleteBinLine className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
-      {/* Modal */}
-      {deleteConfirm && (
-        <DeleteConfirmModal
-          onCancel={() => setDeleteConfirm(null)}
-          onConfirm={() => handleDelete(deleteConfirm)}
-        />
-      )}
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={deleteConfirm.isOpen}
+        onCancel={() => setDeleteConfirm({ isOpen: false, campaignId: null, campaignName: "" })}
+        onConfirm={() => handleDelete(deleteConfirm.campaignId)}
+        itemName={deleteConfirm.campaignName}
+        title="Delete Campaign"
+        message={`Are you sure you want to delete the campaign "${deleteConfirm.campaignName}"? This action cannot be undone.`}
+      />
     </div>
   );
 }

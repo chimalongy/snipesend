@@ -8,10 +8,10 @@ const publicRoutes = ["/login"];
 export async function middleware(req) {
   const path = req.nextUrl.pathname;
 
-  const isProtectedRoute = protectedRoutePrefix.some(prefix => path.startsWith(prefix));
+  const isProtectedRoute = path.startsWith(protectedRoutePrefix);
   const isPublicRoute = publicRoutes.includes(path);
 
-  const cookieStore = await cookies(); // ✅ Now awaited
+  const cookieStore = cookies();
   const token = cookieStore.get("session")?.value;
 
   const session = await decrypt(token);

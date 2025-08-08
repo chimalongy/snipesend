@@ -16,6 +16,14 @@ export const apiSumary={
     delete_email:"/api/dashboard/emails/delete",
 
     create_campaign:"/api/dashboard/outbounds/add",
-    get_user_outbounds:"/api/dashboard/outbounds/get-all-user-outbounds"
+    get_user_outbounds:"/api/dashboard/outbounds/get-all-user-outbounds",
+    update_outbound:"/api/dashboard/outbounds/update",
+    delete_outbound:"/api/dashboard/outbounds/delete",
+    add_new_task:"/api/dashboard/outbounds/tasks/add",
+    get_outbound_tasks: `${process.env.NEXT_PUBLIC_TASKS_SCHEDULER_WORKER}/get-outbound-tasks`,
+    get_outbound_tasks_backend:"/api/dashboard/outbounds/tasks/get-outbound-tasks",
+    get_outbound_replies: "/api/dashboard/outbounds/get-outbound-replies"
+    
+    
 
 }

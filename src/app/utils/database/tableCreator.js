@@ -92,6 +92,76 @@ async function createOutboundSettingsTable() {
   }
 }
 
+async function createTaskTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      outbound_id INTEGER NOT NULL REFERENCES outbound_settings(id) ON DELETE CASCADE,
+      task_name VARCHAR(255) NOT NULL,
+      task_type VARCHAR(100) NOT NULL,
+      task_subject TEXT NOT NULL,
+      task_body TEXT NOT NULL,
+      task_schedule_date DATE NOT NULL,
+      task_schedule_time TIME NOT NULL,
+      task_sending_rate INTEGER NOT NULL,
+      task_status VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  try {
+    const client = await pool.connect();
+    await client.query(query);
+    client.release();
+    console.log("✅ tasks table created (if not exists).");
+  } catch (error) {
+    console.error("❌ Error creating tasks table:", error);
+  }
+}
+
+async function createTaskResultTable() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS task_results (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      outbound_id INTEGER NOT NULL REFERENCES outbound_settings(id) ON DELETE CASCADE,
+      task_id INTEGER NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+      task_name VARCHAR(255) NOT NULL,
+      sent_from VARCHAR(255) NOT NULL,
+      receiver VARCHAR(255) NOT NULL,
+      message_id VARCHAR(255) NOT NULL,
+      send_result TEXT NOT NULL,
+      send_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  try {
+    const client = await pool.connect();
+    await client.query(query);
+    console.log("✅ task_results table created (if not exists).");
+
+    // Optionally create a UNIQUE index for message_id if needed
+    const indexQuery = `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE c.relname = 'idx_task_results_message_id'
+            AND n.nspname = 'public'
+        ) THEN
+          CREATE UNIQUE INDEX idx_task_results_message_id ON task_results(message_id);
+        END IF;
+      END$$;
+    `;
+    await client.query(indexQuery);
+
+    client.release();
+  } catch (error) {
+    console.error("❌ Error creating task_results table:", error.message);
+  }
+}
 
 
 
@@ -101,8 +171,10 @@ async function createOutboundSettingsTable() {
 
 
 export async function TableCreator(){
-    await createUsersTable()
-    await createForgotPasswordOTPsTable()
+    await createUsersTable();
+    await createForgotPasswordOTPsTable();
     await createEmailSettingsTable();
-    createOutboundSettingsTable();
+    await  createOutboundSettingsTable();
+    await createTaskTable();
+    await createTaskResultTable()
 }
