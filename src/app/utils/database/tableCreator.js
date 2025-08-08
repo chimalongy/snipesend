@@ -176,5 +176,6 @@ export async function TableCreator(){
     await createEmailSettingsTable();
     await  createOutboundSettingsTable();
     await createTaskTable();
+    
     await createTaskResultTable()
 }

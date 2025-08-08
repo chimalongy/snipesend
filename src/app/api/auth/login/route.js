@@ -7,7 +7,7 @@ import { TableCreator } from "@/app/utils/database/tableCreator";
 const db = new DBFunctions();
 
 export async function POST(request) {
-  await TableCreator()
+  await TableCreator();
   try {
     const { email, password } = await request.json();
 
