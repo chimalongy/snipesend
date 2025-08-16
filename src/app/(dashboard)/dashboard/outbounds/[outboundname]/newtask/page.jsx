@@ -18,6 +18,7 @@ import useUserStore from '@/app/utils/store/user';
 import toast from 'react-hot-toast';
 import { apiSumary } from '@/app/utils/apiSummary';
 import axios from 'axios';
+import { hasISOTimdPassed } from '@/app/utils/globalfunctions';
 
 function convertTo24Hour(time12h) {
   if (!time12h) return '';
@@ -73,8 +74,8 @@ export default function NewScheduledTask() {
     const uniqueTaskNames = new Set();
 
     tasks.forEach(task => {
-      if (task.data && task.data.taskname) {
-        uniqueTaskNames.add(task.data.taskname);
+      if (task.data && (task?.data?.taskname|| task.data.task_name)) {
+        uniqueTaskNames.add(task?.data?.taskname||task.data.task_name);
       }
     });
 
@@ -128,7 +129,6 @@ export default function NewScheduledTask() {
 
     // Convert to 24-hour for comparison
     const time24hr = convertTo24Hour(formData.scheduledTime);
-
     // Validate time if date is today
     if (formData.scheduledDate === currentDate && time24hr < currentTime24) {
       toast.error('Please select a future time for today');
@@ -142,7 +142,8 @@ export default function NewScheduledTask() {
 
     setIsSubmitting(true);
 
-    // CHECK IN ALL SCHEDULLED TASK
+   
+
  
 
     try {
@@ -227,7 +228,7 @@ export default function NewScheduledTask() {
               type="button"
               onClick={() => {
                 setFormData((prev) => ({ ...prev, taskType: 'followup', }))
-                let prevsubject = outboundTasks[0].data.taskSubject.trim()
+                let prevsubject = outboundTasks[0].data?.taskSubject?.trim() ||outboundTasks[0].data?.task_subject?.trim()
 
                 setFormData((prev) => ({ ...prev, taskType: 'followup', }))
                 setFormData((prev) => ({ ...prev, subject: prevsubject, }))

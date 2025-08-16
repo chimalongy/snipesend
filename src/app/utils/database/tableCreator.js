@@ -69,6 +69,38 @@ async function createEmailSettingsTable() {
     console.error("❌ Error creating email_settings table:", error);
   }
 }
+async function createEmailSettingsTable2() {
+  const query = `
+    CREATE TABLE IF NOT EXISTS email_settings_2 (
+      id SERIAL PRIMARY KEY,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      email_address VARCHAR(255) NOT NULL,
+      access_token VARCHAR(255) NOT NULL,
+      refresh_token VARCHAR(255) NOT NULL,
+      sender_name VARCHAR(255),
+      signature TEXT,
+      daily_sending_capacity INTEGER,
+      daily_usage INTEGER DEFAULT 0,
+      last_used TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+
+  try {
+    const client = await pool.connect();
+    await client.query(query);
+    client.release();
+    console.log("✅ email_settings table created (if not exists).");
+  } catch (error) {
+    console.error("❌ Error creating email_settings table:", error);
+  }
+}
+
+
+
+
+
+
 async function createOutboundSettingsTable() {
   const query = `
     CREATE TABLE IF NOT EXISTS outbound_settings (
@@ -131,6 +163,7 @@ async function createTaskResultTable() {
       sent_from VARCHAR(255) NOT NULL,
       receiver VARCHAR(255) NOT NULL,
       message_id VARCHAR(255) NOT NULL,
+      thread_id TEXT,
       send_result TEXT NOT NULL,
       send_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
@@ -174,6 +207,7 @@ export async function TableCreator(){
     await createUsersTable();
     await createForgotPasswordOTPsTable();
     await createEmailSettingsTable();
+    await createEmailSettingsTable2();
     await  createOutboundSettingsTable();
     await createTaskTable();
 

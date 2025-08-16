@@ -145,6 +145,49 @@ async registerEmail(userId, emailAddress, password, senderName, signature, daily
   }
 }
 
+async saveGmailConnection( 
+  user_id,
+  email_address,
+  access_token,
+  refresh_token,
+  sender_name,
+  signature,
+  sending_capacity) {
+  try {
+    const insertQuery = `
+      INSERT INTO email_settings_2 
+      (user_id, email_address, access_token, refresh_token, sender_name, signature, daily_sending_capacity)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING id, user_id, email_address, sender_name, signature, daily_sending_capacity, daily_usage, last_used, created_at
+    `;
+
+    const values = [
+      user_id,
+      email_address,
+      access_token,
+      refresh_token,
+      sender_name,
+      signature,
+      sending_capacity
+    ];
+
+    console.log(values)
+
+    const result = await pool.query(insertQuery, values);
+
+    if (result.rows.length === 0) {
+      throw new Error("Email settings registration failed");
+    }
+
+    return { success: true, data: result.rows[0] };
+  } catch (error) {
+    console.error("Error registering email settings:", error);
+    if (error.code === "23505") {
+      throw new Error("Email address already exists");
+    }
+    return { success: false, data: null };
+  }
+}
 
 async deleteEmail(id) {
   try {
@@ -195,7 +238,25 @@ async updateEmail(id, updateFields) {
   }
 }
 
+
+
 async getUserEmails(userId) {
+  try {
+    const query = `
+      SELECT *
+      FROM email_settings_2
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+    `;
+    const result = await pool.query(query, [userId]);
+
+    return { success: true, data: result.rows };
+  } catch (error) {
+    console.error("Error fetching user emails:", error);
+    return { success: false, data: null };
+  }
+}
+async getUserEmailsold(userId) {
   try {
     const query = `
       SELECT *
@@ -232,6 +293,25 @@ async findEmailById(id) {
   }
 }
 async findEmailByemailAddress(email) {
+  try {
+    const query = `
+      SELECT *
+      FROM email_settings_2
+      WHERE email_address = $1
+    `;
+    const result = await pool.query(query, [email]);
+
+    if (result.rows.length === 0) {
+      return { success: false, data: null, message: "Email not found" };
+    }
+
+    return { success: true, data: result.rows[0] };
+  } catch (error) {
+    console.error("Error fetching email by ID:", error);
+    return { success: false, data: null, message: "Error fetching email" };
+  }
+}
+async findEmailByemailAddressOld(email) {
   try {
     const query = `
       SELECT *
@@ -576,14 +656,14 @@ async getTasksByOutboundId(outboundId) {
 
 
 
-async  getMessageThreads(list, outbound_id, sender_name) {
+async  getMessageThreads(list, outbound_id, sender_email) {
   const result = [];
 
   for (let i = 0; i < list.length; i++) {
     const receiver = list[i];
 
     const sql = `
-      SELECT message_id 
+      SELECT message_id, thread_id
       FROM task_results 
       WHERE outbound_id = $1 
         AND sent_from = $2 
@@ -591,12 +671,13 @@ async  getMessageThreads(list, outbound_id, sender_name) {
     `;
 
     try {
-      const res = await pool.query(sql, [outbound_id, sender_name, receiver]);
+      const res = await pool.query(sql, [outbound_id, sender_email, receiver]);
       
       // Push an object containing receiver and their message_ids
       result.push({
         receiver,
-        message_ids: res.rows.map(row => row.message_id)
+        message_ids: res.rows.map(row => row.message_id),
+        thread_ids: res.rows.map(row => row.thread_id)
       });
 
     } catch (error) {
@@ -604,8 +685,11 @@ async  getMessageThreads(list, outbound_id, sender_name) {
     }
   }
 
+  
+
   return result;
 }
+
 
 
 

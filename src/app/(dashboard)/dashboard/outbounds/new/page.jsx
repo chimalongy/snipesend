@@ -120,7 +120,7 @@ export default function NewOutboundCampaign() {
 
     const submissionData = {
       name: formData.name,
-      initialList:allEmails,
+      initialList: allEmails,
       assignedEmails: assignmentsWithLists,
       userId: user.id
     };
@@ -145,7 +145,6 @@ export default function NewOutboundCampaign() {
         toast.error(result.data.message)
       }
     } catch (error) {
-      // console.error("Failed to create campaign:", error);
       toast.error(error?.response?.data?.message || 'Failed to create campaign. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -158,42 +157,42 @@ export default function NewOutboundCampaign() {
   return (
     <div className="pb-[60px] max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <Link href="/dashboard/outbounds" className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors">
+      <div className="flex items-center justify-between mb-6 sm:mb-8">
+        <Link href="/dashboard/outbounds" className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors text-sm sm:text-base">
           <RiArrowLeftLine className="mr-1" /> Back to campaigns
         </Link>
-        <div className="text-sm text-gray-500 flex items-center">
+        <div className="text-xs sm:text-sm text-gray-500 flex items-center">
           <RiListCheck className="mr-1" /> Step {step} of 3
         </div>
       </div>
 
-      <div className="flex items-center mb-6">
-        <RiSendPlaneLine className="text-indigo-600 text-3xl mr-3" />
-        <h1 className="text-2xl font-bold text-gray-900">Create New Outbound Campaign</h1>
+      <div className="flex items-center mb-4 sm:mb-6">
+        <RiSendPlaneLine className="text-indigo-600 text-2xl sm:text-3xl mr-2 sm:mr-3" />
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Create New Outbound Campaign</h1>
       </div>
 
       {/* Progress Steps */}
-      <div className="mb-8 bg-indigo-50 p-4 rounded-lg">
+      <div className="mb-6 sm:mb-8 bg-indigo-50 p-3 sm:p-4 rounded-lg">
         <div className="flex items-center justify-between mb-2">
           <div className={`flex flex-col items-center ${step >= 1 ? 'text-indigo-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
-              {step > 1 ? <RiCheckLine className="text-lg" /> : <span className="font-medium">1</span>}
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${step >= 1 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
+              {step > 1 ? <RiCheckLine className="text-sm sm:text-lg" /> : <span className="font-medium text-sm sm:text-base">1</span>}
             </div>
-            <span className="text-xs mt-2 font-medium">Basic Info</span>
+            <span className="text-xs mt-1 sm:mt-2 font-medium">Basic Info</span>
           </div>
-          <div className={`flex-1 h-1 mx-2 ${step >= 2 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
+          <div className={`flex-1 h-1 mx-1 sm:mx-2 ${step >= 2 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
           <div className={`flex flex-col items-center ${step >= 2 ? 'text-indigo-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
-              {step > 2 ? <RiCheckLine className="text-lg" /> : <span className="font-medium">2</span>}
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${step >= 2 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
+              {step > 2 ? <RiCheckLine className="text-sm sm:text-lg" /> : <span className="font-medium text-sm sm:text-base">2</span>}
             </div>
-            <span className="text-xs mt-2 font-medium">Assign Emails</span>
+            <span className="text-xs mt-1 sm:mt-2 font-medium">Assign Emails</span>
           </div>
-          <div className={`flex-1 h-1 mx-2 ${step >= 3 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
+          <div className={`flex-1 h-1 mx-1 sm:mx-2 ${step >= 3 ? 'bg-indigo-500' : 'bg-gray-200'}`}></div>
           <div className={`flex flex-col items-center ${step >= 3 ? 'text-indigo-600' : 'text-gray-400'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
-              <span className="font-medium">3</span>
+            <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ${step >= 3 ? 'bg-indigo-100 border-2 border-indigo-600' : 'bg-gray-100 border-2 border-gray-300'}`}>
+              <span className="font-medium text-sm sm:text-base">3</span>
             </div>
-            <span className="text-xs mt-2 font-medium">Review</span>
+            <span className="text-xs mt-1 sm:mt-2 font-medium">Review</span>
           </div>
         </div>
       </div>
@@ -201,13 +200,13 @@ export default function NewOutboundCampaign() {
       {/* Form */}
       <form onSubmit={handleSubmit} className="bg-white shadow-lg rounded-xl overflow-hidden">
         {step === 1 && (
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center">
-              <RiInformationLine className="text-indigo-500 mr-2 text-xl" />
-              <h2 className="text-lg font-semibold text-gray-900">Campaign Information</h2>
+              <RiInformationLine className="text-indigo-500 mr-2 text-lg sm:text-xl" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Campaign Information</h2>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
                   <RiUserLine className="mr-2 text-gray-400" /> Campaign Name
@@ -218,7 +217,7 @@ export default function NewOutboundCampaign() {
                   name="name"
                   value={formData.name}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="My Awesome Campaign"
                   required
                 />
@@ -233,22 +232,22 @@ export default function NewOutboundCampaign() {
                   name="emailList"
                   value={formData.emailList}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 h-40"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 h-32 sm:h-40"
                   placeholder="Paste email addresses here, separated by commas, semicolons, or new lines"
                   required
                 />
-                <div className="text-sm text-gray-500 mt-1 flex items-center">
+                <div className="text-xs sm:text-sm text-gray-500 mt-1 flex items-center">
                   <RiInformationLine className="mr-1" /> {emailCount} email addresses detected
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div className="flex justify-end pt-3 sm:pt-4">
               <button
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!formData.name || !formData.emailList}
-                className={`px-6 py-2 rounded-lg text-white font-medium flex items-center transition-all ${
+                className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-white font-medium flex items-center transition-all ${
                   !formData.name || !formData.emailList 
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-indigo-600 hover:bg-indigo-700 shadow-md'
@@ -261,66 +260,66 @@ export default function NewOutboundCampaign() {
         )}
 
         {step === 2 && (
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center">
-              <RiPieChartLine className="text-indigo-500 mr-2 text-xl" />
-              <h2 className="text-lg font-semibold text-gray-900">Email Allocation</h2>
+              <RiPieChartLine className="text-indigo-500 mr-2 text-lg sm:text-xl" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Email Allocation</h2>
             </div>
             
             {/* Allocation Status */}
-            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <div className="text-sm font-medium text-indigo-700 flex items-center justify-center">
-                    <RiMailLine className="mr-1" /> Total Emails
+            <div className="bg-indigo-50 p-3 sm:p-4 rounded-lg border border-indigo-100">
+              <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+                <div className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
+                  <div className="text-xs sm:text-sm font-medium text-indigo-700 flex items-center justify-center">
+                    <RiMailLine className="mr-1" /> Total
                   </div>
-                  <div className="text-2xl font-bold mt-1">{emailCount}</div>
+                  <div className="text-xl sm:text-2xl font-bold mt-1">{emailCount}</div>
                 </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <div className="text-sm font-medium text-green-700 flex items-center justify-center">
+                <div className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
+                  <div className="text-xs sm:text-sm font-medium text-green-700 flex items-center justify-center">
                     <RiCheckLine className="mr-1" /> Allocated
                   </div>
-                  <div className="text-2xl font-bold mt-1">{totalAllocated}</div>
+                  <div className="text-xl sm:text-2xl font-bold mt-1">{totalAllocated}</div>
                 </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm">
-                  <div className="text-sm font-medium text-red-700 flex items-center justify-center">
+                <div className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
+                  <div className="text-xs sm:text-sm font-medium text-red-700 flex items-center justify-center">
                     <RiAlertLine className="mr-1" /> Unallocated
                   </div>
-                  <div className="text-2xl font-bold mt-1">{unallocatedCount}</div>
+                  <div className="text-xl sm:text-2xl font-bold mt-1">{unallocatedCount}</div>
                 </div>
               </div>
               
               {unallocatedCount > 0 && (
-                <div className="mt-3 p-2 bg-red-50 text-red-600 rounded text-sm flex items-center justify-center">
-                  <RiAlertLine className="mr-2" /> You still have {unallocatedCount} unallocated emails
+                <div className="mt-2 sm:mt-3 p-2 bg-red-50 text-red-600 rounded text-xs sm:text-sm flex items-center justify-center">
+                  <RiAlertLine className="mr-2" /> {unallocatedCount} unallocated emails
                 </div>
               )}
               {totalAllocated > emailCount && (
-                <div className="mt-3 p-2 bg-yellow-50 text-yellow-600 rounded text-sm flex items-center justify-center">
-                  <RiAlertLine className="mr-2" /> You've allocated {totalAllocated - emailCount} more emails than in your list
+                <div className="mt-2 sm:mt-3 p-2 bg-yellow-50 text-yellow-600 rounded text-xs sm:text-sm flex items-center justify-center">
+                  <RiAlertLine className="mr-2" /> Over allocated by {totalAllocated - emailCount}
                 </div>
               )}
             </div>
 
-            <p className="text-sm text-gray-500 flex items-center">
+            <p className="text-xs sm:text-sm text-gray-500 flex items-center">
               <RiInformationLine className="mr-1" /> Select sending emails and allocate recipients to each
             </p>
 
-            <div className="space-y-5">
+            <div className="space-y-4 sm:space-y-5">
               {/* Email Selection */}
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                <label htmlFor="email-select" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <label htmlFor="email-select" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center">
                   <RiMailLine className="mr-2 text-gray-400" /> Select Sending Email
                 </label>
                 <select
                   id="email-select"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm sm:text-base"
                   onChange={(e) => {
                     const selected = userEmails.find(email => email.email_address === e.target.value);
                     if (selected) setSelectedEmail(selected);
                   }}
                 >
-                  <option value="">-- Select an email address --</option>
+                  <option value="">-- Select an email --</option>
                   {userEmails.map(email => (
                     <option 
                       key={email.email_address} 
@@ -335,23 +334,22 @@ export default function NewOutboundCampaign() {
 
               {/* Allocation Form */}
               {selectedEmail && !formData.assignedEmails.some(e => e.email_address === selectedEmail.email_address) && (
-                <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                  <div className="flex items-center justify-between mb-3">
+                <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="flex items-start justify-between mb-2 sm:mb-3">
                     <div>
-                      <div className="font-medium flex items-center">
+                      <div className="font-medium flex items-center text-sm sm:text-base">
                         <RiMailLine className="mr-2 text-indigo-500" /> {selectedEmail.email_address}
                       </div>
-                      <div className="text-sm text-gray-500 mt-1 flex items-center">
+                      <div className="text-xs sm:text-sm text-gray-500 mt-1 flex items-center">
                         <RiInformationLine className="mr-1" />
                         {selectedEmail.daily_usage} of {selectedEmail.daily_sending_capacity} sent today
-                        (Max available: {selectedEmail.daily_sending_capacity - selectedEmail.daily_usage})
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4">
-                    <label htmlFor="email-count" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
-                      <RiAddLine className="mr-2 text-gray-400" /> Number of emails to allocate
+                  <div className="mt-3 sm:mt-4">
+                    <label htmlFor="email-count" className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2 flex items-center">
+                      <RiAddLine className="mr-2 text-gray-400" /> Emails to allocate
                     </label>
                     <input
                       type="number"
@@ -367,14 +365,14 @@ export default function NewOutboundCampaign() {
                         selectedEmail.daily_sending_capacity - selectedEmail.daily_usage,
                         unallocatedCount
                       ))}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full px-3 py-2 sm:px-4 sm:py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <div className="text-xs text-gray-500 mt-1 flex items-center">
                       <RiInformationLine className="mr-1" />
                       Max {Math.min(
                         selectedEmail.daily_sending_capacity - selectedEmail.daily_usage,
                         unallocatedCount
-                      )} emails available for allocation
+                      )} available
                     </div>
                   </div>
 
@@ -396,7 +394,7 @@ export default function NewOutboundCampaign() {
                         setAllocationCount(0);
                       }
                     }}
-                    className="mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium flex items-center justify-center hover:bg-indigo-700 transition-colors shadow-md"
+                    className="mt-3 sm:mt-4 w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium flex items-center justify-center hover:bg-indigo-700 transition-colors shadow-md text-sm sm:text-base"
                   >
                     <RiAddLine className="mr-2" /> Add Allocation
                   </button>
@@ -404,30 +402,31 @@ export default function NewOutboundCampaign() {
               )}
 
               {/* Assigned Emails List */}
-              <div className="mt-6">
-                <h3 className="text-md font-medium text-gray-900 mb-3 flex items-center">
+              <div className="mt-4 sm:mt-6">
+                <h3 className="text-sm sm:text-md font-medium text-gray-900 mb-2 sm:mb-3 flex items-center">
                   <RiListCheck className="mr-2 text-indigo-500" /> Assigned Emails
                 </h3>
                 
                 {formData.assignedEmails.length === 0 ? (
-                  <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 text-gray-400 flex items-center justify-center">
+                  <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200 text-gray-400 flex items-center justify-center text-xs sm:text-sm">
                     <RiInformationLine className="mr-2" /> No emails assigned yet
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {formData.assignedEmails.map((assignment, index) => {
                       const emailData = userEmails.find(e => e.email_address === assignment.email_address);
                       const maxAvailable = emailData ? emailData.daily_sending_capacity - emailData.daily_usage : 0;
 
                       return (
-                        <div key={index} className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
-                          <div>
-                            <div className="font-medium flex items-center">
-                              <RiMailLine className="mr-2 text-green-500" /> {assignment.email_address}
+                        <div key={index} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm flex justify-between items-center">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium flex items-center text-sm sm:text-base truncate">
+                              <RiMailLine className="mr-2 text-green-500 min-w-[16px]" /> 
+                              <span className="truncate">{assignment.email_address}</span>
                             </div>
-                            <div className="text-sm text-gray-600 mt-1 flex items-center">
-                              <RiInformationLine className="mr-1" />
-                              Allocated: {assignment.count} emails (max {maxAvailable})
+                            <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center">
+                              <RiInformationLine className="mr-1 min-w-[16px]" />
+                              <span>Allocated: {assignment.count} (max {maxAvailable})</span>
                             </div>
                           </div>
                           <button
@@ -438,7 +437,7 @@ export default function NewOutboundCampaign() {
                                 assignedEmails: prev.assignedEmails.filter((_, i) => i !== index)
                               }));
                             }}
-                            className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                            className="text-red-500 hover:text-red-700 p-1 sm:p-2 rounded-full hover:bg-red-50 transition-colors ml-2"
                             title="Remove allocation"
                           >
                             <RiCloseLine />
@@ -451,11 +450,11 @@ export default function NewOutboundCampaign() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-between pt-4 sm:pt-6">
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium flex items-center hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 sm:px-6 sm:py-2 border border-gray-300 rounded-lg text-gray-700 font-medium flex items-center hover:bg-gray-50 transition-colors text-sm sm:text-base"
               >
                 <RiArrowLeftLine className="mr-2" /> Back
               </button>
@@ -463,7 +462,7 @@ export default function NewOutboundCampaign() {
                 type="button"
                 onClick={() => setStep(3)}
                 disabled={unallocatedCount !== 0 || totalAllocated > emailCount}
-                className={`px-6 py-2 rounded-lg text-white font-medium flex items-center transition-all ${
+                className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-white font-medium flex items-center transition-all text-sm sm:text-base ${
                   unallocatedCount !== 0 || totalAllocated > emailCount
                     ? 'bg-gray-400 cursor-not-allowed' 
                     : 'bg-indigo-600 hover:bg-indigo-700 shadow-md'
@@ -476,55 +475,55 @@ export default function NewOutboundCampaign() {
         )}
 
         {step === 3 && (
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="flex items-center">
-              <RiCheckLine className="text-green-500 mr-2 text-xl" />
-              <h2 className="text-lg font-semibold text-gray-900">Review Campaign</h2>
+              <RiCheckLine className="text-green-500 mr-2 text-lg sm:text-xl" />
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Review Campaign</h2>
             </div>
 
-            <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
-              <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+            <div className="bg-gray-50 p-4 sm:p-5 rounded-lg border border-gray-200">
+              <h3 className="font-medium text-gray-900 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
                 <RiInformationLine className="mr-2 text-indigo-500" /> Campaign Details
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-start">
-                  <span className="text-gray-500 w-32 flex items-center">
+                  <span className="text-gray-500 w-24 sm:w-32 flex items-center text-xs sm:text-sm">
                     <RiUserLine className="mr-2" /> Name:
                   </span>
-                  <span className="font-medium">{formData.name}</span>
+                  <span className="font-medium text-sm sm:text-base">{formData.name}</span>
                 </div>
                 <div className="flex items-start">
-                  <span className="text-gray-500 w-32 flex items-center">
-                    <RiMailLine className="mr-2" /> Total Emails:
+                  <span className="text-gray-500 w-24 sm:w-32 flex items-center text-xs sm:text-sm">
+                    <RiMailLine className="mr-2" /> Total:
                   </span>
-                  <span className="flex items-center">
+                  <span className="flex items-center text-sm sm:text-base">
                     {emailCount}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-500 w-32 block mb-2 flex items-center">
-                    <RiListCheck className="mr-2" /> Assigned Emails:
+                  <span className="text-gray-500 w-24 sm:w-32 block mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
+                    <RiListCheck className="mr-2" /> Assigned:
                   </span>
-                  <div className="space-y-3">
+                  <div className="space-y-2 sm:space-y-3">
                     {formData.assignedEmails.length > 0 ? (
                       formData.assignedEmails.map((assignment, index) => {
                         const emailData = userEmails.find(e => e.email_address === assignment.email_address);
                         const maxAvailable = emailData ? emailData.daily_sending_capacity - emailData.daily_usage : 0;
 
                         return (
-                          <div key={index} className="bg-white p-3 rounded-md border border-gray-200 shadow-sm">
-                            <div className="font-medium flex items-center">
+                          <div key={index} className="bg-white p-2 sm:p-3 rounded-md border border-gray-200 shadow-sm">
+                            <div className="font-medium flex items-center text-sm sm:text-base">
                               <RiMailLine className="mr-2 text-indigo-500" /> {assignment.email_address}
                             </div>
-                            <div className="text-sm text-gray-600 mt-1 flex items-center">
+                            <div className="text-xs sm:text-sm text-gray-600 mt-1 flex items-center">
                               <RiInformationLine className="mr-1" />
-                              Will send: {assignment.count} emails (max {maxAvailable} available)
+                              Will send: {assignment.count} (max {maxAvailable})
                             </div>
                           </div>
                         );
                       })
                     ) : (
-                      <span className="text-gray-400 flex items-center">
+                      <span className="text-gray-400 flex items-center text-xs sm:text-sm">
                         <RiAlertLine className="mr-1" /> No emails assigned
                       </span>
                     )}
@@ -533,18 +532,18 @@ export default function NewOutboundCampaign() {
               </div>
             </div>
 
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-between pt-4 sm:pt-6">
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium flex items-center hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 sm:px-6 sm:py-2 border border-gray-300 rounded-lg text-gray-700 font-medium flex items-center hover:bg-gray-50 transition-colors text-sm sm:text-base"
               >
                 <RiArrowLeftLine className="mr-2" /> Back
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-6 py-2 rounded-lg text-white font-medium flex items-center shadow-md transition-colors ${
+                className={`px-4 py-2 sm:px-6 sm:py-2 rounded-lg text-white font-medium flex items-center shadow-md transition-colors text-sm sm:text-base ${
                   isSubmitting ? 'bg-green-500' : 'bg-green-600 hover:bg-green-700'
                 }`}
               >
@@ -558,7 +557,7 @@ export default function NewOutboundCampaign() {
                   </>
                 ) : (
                   <>
-                    <RiSendPlaneLine className="mr-2" /> Create Campaign
+                    <RiSendPlaneLine className="mr-2" /> Create
                   </>
                 )}
               </button>

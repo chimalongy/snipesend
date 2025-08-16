@@ -1,102 +1,79 @@
-import Imap from 'node-imap';
+import { google } from "googleapis";
 
-export async function readEmails(email, app_password) {
-  return new Promise((resolve, reject) => {
-    const imap = new Imap({
-      user: email,
-      password: app_password,
-      host: 'imap.gmail.com',
-      port: 993,
-      tls: true,
-      tlsOptions: {
-        rejectUnauthorized: false,
-      },
-      
+export async function readEmails(emailAddress, refreshToken, accessToken, subject) {
+  try {
+    const oAuth2Client = new google.auth.OAuth2(
+       process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      process.env.GOOGLE_REDIRECT_URI
+    );
+
+    oAuth2Client.setCredentials({
+      access_token: accessToken,
+      refresh_token: refreshToken
     });
 
-    const replies = [];
+    const gmail = google.gmail({ version: "v1", auth: oAuth2Client });
 
-    function openInbox(cb) {
-      imap.openBox('INBOX', true, cb); // Open inbox in read-only mode
-    }
+    let emails = [];
+    let nextPageToken = null;
 
-    imap.once('ready', () => {
-      openInbox((err, box) => {
-        if (err) return reject(err);
+    // Gmail search query for subject
+    const searchQuery = `subject:"${subject}"`;
 
-        imap.search(['ALL'], (err, results) => {
-          if (err) return reject(err);
-
-          const last10 = results.slice(-10);
-
-          if (last10.length === 0) {
-            imap.end();
-            return resolve([]);
-          }
-
-          const fetch = imap.fetch(last10, {
-            bodies: ['HEADER.FIELDS (FROM SUBJECT DATE)', 'TEXT'],
-          });
-
-          let current = {};
-
-          fetch.on('message', (msg) => {
-            current = {};
-
-            msg.on('body', (stream, info) => {
-              let buffer = '';
-
-              stream.on('data', (chunk) => {
-                buffer += chunk.toString('utf8');
-              });
-
-              stream.on('end', () => {
-                if (info.which === 'TEXT') {
-                  current.body = buffer;
-                } else if (
-                  info.which &&
-                  info.which.toLowerCase().includes('header.fields')
-                ) {
-                  const lines = buffer.split(/\r?\n/);
-                  lines.forEach((line) => {
-                    if (line.toLowerCase().startsWith('from:')) {
-                      current.from = line.substring(5).trim();
-                    } else if (line.toLowerCase().startsWith('subject:')) {
-                      current.subject = line.substring(8).trim();
-                    } else if (line.toLowerCase().startsWith('date:')) {
-                      current.date = line.substring(5).trim();
-                    }
-                  });
-                }
-              });
-            });
-
-            msg.once('end', () => {
-              replies.push(current);
-            });
-          });
-
-          fetch.once('error', (err) => {
-            console.error('Fetch error:', err);
-            reject(err);
-          });
-
-          fetch.once('end', () => {
-            imap.end();
-          });
-        });
+    do {
+      const listRes = await gmail.users.messages.list({
+        userId: "me",
+        labelIds: ["INBOX"],
+        maxResults: 500, // max allowed
+        pageToken: nextPageToken || undefined,
+        q: searchQuery, // filter by subject
       });
-    });
 
-    imap.once('error', (err) => {
-      console.error('IMAP error:', err);
-      reject(err);
-    });
+      const messages = listRes.data.messages || [];
 
-    imap.once('end', () => {
-      resolve(replies);
-    });
+      for (const msg of messages) {
+        const msgData = await gmail.users.messages.get({
+          userId: "me",
+          id: msg.id,
+          format: "full",
+        });
 
-    imap.connect();
-  });
+        const payload = msgData.data.payload;
+        const headers = payload.headers || [];
+
+        const from = headers.find(h => h.name.toLowerCase() === "from")?.value || "";
+        const msgSubject = headers.find(h => h.name.toLowerCase() === "subject")?.value || "";
+        const date = headers.find(h => h.name.toLowerCase() === "date")?.value || "";
+
+        let body = "";
+        if (payload.parts) {
+          const part = payload.parts.find(p => p.mimeType === "text/plain");
+          if (part?.body?.data) {
+            body = Buffer.from(part.body.data, "base64").toString("utf-8");
+          }
+        } else if (payload.body?.data) {
+          body = Buffer.from(payload.body.data, "base64").toString("utf-8");
+        }
+
+        emails.push({
+          id: msg.id,
+          threadId: msg.threadId,
+          from,
+          subject: msgSubject,
+          to:emailAddress,
+          date,
+          body,
+        });
+      }
+
+      nextPageToken = listRes.data.nextPageToken;
+    } while (nextPageToken);
+
+    console.log(`Fetched ${emails.length} emails for ${emailAddress} with subject "${subject}"`);
+    return emails;
+  } catch (error) {
+    console.error(`Error reading emails for ${emailAddress}:`, error.message);
+    return [];
+  }
 }

@@ -1,10 +1,12 @@
 'use client';
 
-import { RiMailSendLine, RiDeleteBinLine, RiCalendarLine, RiArrowLeftLine, RiListUnordered, RiEditLine, RiReplyLine } from 'react-icons/ri';
+import { RiMailSendLine, RiDeleteBinLine, RiCalendarLine, RiArrowLeftLine, RiListUnordered, RiEditLine, RiReplyLine, RiArrowDownSLine, RiArrowRightSLine } from 'react-icons/ri';
 import { FiExternalLink } from 'react-icons/fi';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import DeleteConfirmModal from "../../components/DeleteConfirmModal";
+import SendReplyModal from "../../components/SendReplyModal";
+import DeleteCampaignMemberModal from '../../components/DeleteCampaignMemberModal';
 import { useState, useEffect } from 'react';
 import useSelectedOutboundStore from "@/app/utils/store/selectedoutbound";
 import axios from 'axios';
@@ -21,6 +23,19 @@ export default function CampaignDetail() {
   const [completedtasks, setcompletedtasks] = useState([]);
   const [replies, setReplies] = useState([]);
   const [loadingReplies, setLoadingReplies] = useState(false);
+  const [expandedReply, setExpandedReply] = useState(null);
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [deleteMemberModalOpen, setDeleteMemberModalOpen] = useState(false);
+  const [selectedReply, setSelectedReply] = useState(null);
+
+  const cleanEmailBody = (body) => {
+    if (!body) return '';
+    let cleaned = body.replace(/^>.*$/gm, '');
+    cleaned = cleaned.replace(/\r\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    return cleaned;
+  };
 
   async function fetchOutboundTasks(selectedoutbound) {
     try {
@@ -43,8 +58,7 @@ export default function CampaignDetail() {
 
         setscheduledtasks(scheduledtasks);
         setcompletedtasks(completedtasks);
-        
-        // Fetch replies if there are completed tasks
+
         if (completedtasks.length > 0) {
           fetchReplies(completedtasks[0]);
         }
@@ -56,17 +70,23 @@ export default function CampaignDetail() {
 
   async function fetchReplies(task) {
     try {
-      if (!task?.data?.taskSubject || !selectedoutbound?.outbound_id) {
-        console.log("no task subject")
-        return
+      if ((!task?.data?.taskSubject && !task?.data?.task_subject) || !selectedoutbound?.outbound_id) {
+        console.log("no task subject");
+        return;
       };
-      let task_subject = task.data.taskSubject
+      let task_subject = task.data.taskSubject || task.data.task_subject;
       setLoadingReplies(true);
       const response = await axios.post(apiSumary.get_outbound_replies, {
         outbound_id: selectedoutbound.outbound_id,
         subject: task_subject
       });
-      setReplies(response.data.replies || []);
+      let result = response.data;
+      if (result.success) {
+        setReplies(result.replies);
+        setExpandedReply(null);
+      } else {
+        throw new Error();
+      }
     } catch (error) {
       console.error("Error fetching replies:", error);
     } finally {
@@ -88,6 +108,22 @@ export default function CampaignDetail() {
   const toggleTaskExpansion = (taskId) => {
     setExpandedTask(expandedTask === taskId ? null : taskId);
   };
+
+  const toggleReplyExpansion = (replyId) => {
+    setExpandedReply(expandedReply === replyId ? null : replyId);
+  };
+
+  const handleReplyClick = (reply) => {
+    setSelectedReply(reply);
+    setReplyModalOpen(true);
+  };
+
+  const handleDeleteMemberClick = (reply) => {
+    setSelectedReply(reply);
+    setDeleteMemberModalOpen(true);
+  };
+
+
 
   return (
     <div className="pb-8">
@@ -144,42 +180,77 @@ export default function CampaignDetail() {
       <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-gray-900 flex items-center">
-            <RiReplyLine className="mr-2 text-indigo-600" /> Replies
+            <RiReplyLine className="mr-2 text-indigo-600" />
+            Replies
+            {replies.length > 0 && (
+              <span className="ml-2 bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                {replies.length}
+              </span>
+            )}
           </h2>
           {completedtasks.length > 0 && (
-            <button 
+            <button
               onClick={() => fetchReplies(completedtasks[0])}
-              className="text-sm text-indigo-600 hover:text-indigo-800"
+              className="text-sm text-indigo-600 hover:text-indigo-800 flex items-center"
             >
               Refresh
             </button>
           )}
         </div>
-        
+
         {loadingReplies ? (
           <div className="text-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
             <p className="mt-2 text-sm text-gray-500">Loading replies...</p>
           </div>
         ) : replies.length > 0 ? (
-          <div className="space-y-4">
-            {replies.map((reply, index) => (
-              <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-all">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">{reply.from}</p>
-                    <p className="text-sm text-gray-500">{reply.subject}</p>
-                  </div>
-                  <span className="text-xs text-gray-500">{formatHumanReadable(reply.date)}</span>
+          <div className="border border-gray-200 rounded-lg overflow-hidden">
+            <div className="max-h-96 overflow-y-auto">
+              {replies.map((reply, index) => (
+                <div key={reply.id || index} className="border-b border-gray-200 last:border-b-0">
+                  <button
+                    onClick={() => toggleReplyExpansion(reply.id || index)}
+                    className="w-full text-left p-4 hover:bg-gray-50 flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="font-medium text-gray-900">{reply.from}</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {new Date(reply.date).toLocaleString()}
+                      </p>
+                    </div>
+                    {expandedReply === (reply.id || index) ? (
+                      <RiArrowDownSLine className="text-gray-500" />
+                    ) : (
+                      <RiArrowRightSLine className="text-gray-500" />
+                    )}
+                  </button>
+
+                  {expandedReply === (reply.id || index) && (
+                    <div className="p-4 pt-0 bg-gray-50">
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-700 whitespace-pre-line">
+                          {cleanEmailBody(reply.body)}
+                        </p>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          onClick={() => handleReplyClick(reply)}
+                          className="px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50 rounded-md border border-indigo-100 flex items-center"
+                        >
+                          <RiReplyLine className="mr-1" /> Reply
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMemberClick(reply)}
+                          className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-md border border-red-100 flex items-center"
+                        >
+                          <RiDeleteBinLine className="mr-1" /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="mt-2 pt-2 border-t border-gray-100">
-                  <p className="text-sm text-gray-700 line-clamp-2">{reply.body}</p>
-                </div>
-                <button className="mt-2 text-sm text-indigo-600 hover:text-indigo-800">
-                  View full reply
-                </button>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         ) : (
           <div className="text-center py-8">
@@ -249,8 +320,8 @@ export default function CampaignDetail() {
                               Scheduled
                             </span>
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">{task.data.taskSubject}</p>
-                          <p className="text-sm text-green-700 mt-1">{task.data.smtp.auth.user}</p>
+                          <p className="text-sm text-gray-500 mt-1">{task?.data?.taskSubject}</p>
+                          <p className="text-sm text-green-700 mt-1">{task?.data?.smtp?.auth?.user || task?.data?.sender_email}</p>
 
                           {expandedTask === task.id && (
                             <div className="mt-3 pt-3 border-t border-gray-100">
@@ -321,16 +392,16 @@ export default function CampaignDetail() {
                       {completedtasks.map((task, index) => (
                         <tr key={index} className="hover:bg-gray-50">
                           <td className="px-6 py-4 max-w-xs">
-                            <div className="font-medium text-gray-900">{task.data.taskname}</div>
-                            <div className="text-sm text-gray-500 truncate">{task.data.taskSubject}</div>
+                            <div className="font-medium text-gray-900">{task?.data?.taskname || task?.data?.task_name}</div>
+                            <div className="text-sm text-gray-500 truncate">{task.data?.taskSubject || task.data.task_subject}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                           {formatHumanReadable(task.lastRunAt)}
+                            {formatHumanReadable(task.lastRunAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {task.data.smtp.auth.user}
+                            {task.data?.smtp?.auth?.user || task.data?.sender_email}
                           </td>
-                        
+
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button className="text-indigo-600 hover:text-indigo-900 mr-3">
                               View
@@ -356,13 +427,27 @@ export default function CampaignDetail() {
         </div>
       </div>
 
-      {/* Delete Confirm Modal */}
+      {/* Modals */}
       <DeleteConfirmModal
         isOpen={deleteConfirm}
         onCancel={() => setDeleteConfirm(false)}
         onConfirm={handleDelete}
         title="Delete Campaign"
         message="Are you sure you want to delete this campaign? All scheduled tasks will be cancelled and this action cannot be undone."
+      />
+
+      <SendReplyModal
+        isOpen={replyModalOpen}
+        onClose={() => setReplyModalOpen(false)}
+        reply={selectedReply}
+        campaignId={selectedoutbound?.outbound_id}
+      />
+
+      <DeleteCampaignMemberModal
+        isOpen={deleteMemberModalOpen}
+        onClose={() => setDeleteMemberModalOpen(false)}
+        member={selectedReply}
+        campaignId={selectedoutbound?.outbound_id}
       />
     </div>
   );

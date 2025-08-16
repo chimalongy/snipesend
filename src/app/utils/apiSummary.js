@@ -22,7 +22,9 @@ export const apiSumary={
     add_new_task:"/api/dashboard/outbounds/tasks/add",
     get_outbound_tasks: `${process.env.NEXT_PUBLIC_TASKS_SCHEDULER_WORKER}/get-outbound-tasks`,
     get_outbound_tasks_backend:"/api/dashboard/outbounds/tasks/get-outbound-tasks",
-    get_outbound_replies: "/api/dashboard/outbounds/get-outbound-replies"
+    get_outbound_replies: "/api/dashboard/outbounds/replies/get-outbound-replies",
+    send_reply:"/api/dashboard/outbounds/replies/send-reply",
+    delete_campaign_member:"/api/dashboard/outbounds/replies/delete-campaign-member"
     
     
 

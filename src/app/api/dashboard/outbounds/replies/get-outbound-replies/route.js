@@ -1,3 +1,5 @@
+
+
 import { NextResponse } from "next/server";
 import DBFunctions from "@/app/utils/database/DatabaseFunctions";
 import { TableCreator } from "@/app/utils/database/tableCreator";
@@ -40,32 +42,33 @@ export async function POST(req) {
         continue;
       }
 
-      const { password, sender_name, signature } = emailSettings.data;
+      const { access_token, refresh_token } = emailSettings.data;
 
       console.log(`
-            EMAIL ASSIGNED ${emailAssigned},
-            PASSWORD: ${password},
-            SUBJECT: ${subject}
+            EMAIL address ${emailAssigned},
+            Access token: ${access_token},
+            refreshtoken: ${refresh_token}
 
             `);
 
       const replies = await readEmails(
         emailAssigned,
-        password,
-        subject,
+        refresh_token,
+        access_token,
+        subject
       );
 
-      replies.push(replies)
+      allreplies = [...allreplies, ...replies]
     }
 
-    console.log("REPLIES")
+    //console.log("REPLIES")
 
-    console.log(allreplies)
+    //console.log(allreplies)
 
     return NextResponse.json({
       success: true,
       message: "Task(s) scheduled successfully.",
-      data: allocations,
+      replies: allreplies,
     });
   } catch (error) {
     console.error("Task scheduling failed:", error);

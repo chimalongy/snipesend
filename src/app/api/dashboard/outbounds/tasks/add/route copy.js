@@ -137,32 +137,37 @@ export async function POST(req) {
         continue;
       }
 
-      const { access_token,refresh_token, sender_name, signature } = emailSettings.data;
+      const { password, sender_name, signature } = emailSettings.data;
 
-      
-
-      const payload = {
-        user_id: userId,
-        outbound_name: outboundName,
-        outbound_id:outboundId,
-        task_name: taskName,
-        task_id,
-        task_type:taskType,
-        task_subject:taskSubject,
-        task_body:taskBody,
-        triggerAt,
-        recipients,
-        interval: taskSendingRate,
-        sender_name: sender_name,
-        signature,
-        threads,
-        sender_email:emailAssigned,
-        access_token,
-        refresh_token,
-       
+      const smtp = {
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: emailAssigned,
+          pass: password,
+        },
       };
 
-      //console.log (payload)
+      const payload = {
+        outboundname: outboundName,
+        outboundId,
+        taskname: taskName,
+        triggerAt,
+        recipients,
+        taskSubject,
+        taskBody,
+        interval: taskSendingRate,
+        smtp,
+        sendername: sender_name,
+        signature,
+        user_id: userId,
+        task_id,
+        taskType,
+        threads
+      };
+
+      console.log (payload)
 
       try {
         const result = await axios.post(url, payload);
@@ -179,7 +184,7 @@ export async function POST(req) {
           { status: 500 }
         );
       }
-    } 
+    }
 
     return NextResponse.json({
       success: true,
