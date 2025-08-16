@@ -315,12 +315,12 @@ export default function CampaignDetail() {
                       <div className="flex flex-col md:flex-row md:items-start gap-4">
                         <div className="flex-1">
                           <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-medium text-gray-900">{task?.data?.taskname}</h3>
+                            <h3 className="font-medium text-gray-900">{task?.data?.taskname||task?.data?.task_name}</h3>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               Scheduled
                             </span>
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">{task?.data?.taskSubject}</p>
+                          <p className="text-sm text-gray-500 mt-1">{task?.data?.taskSubject||task?.data?.task_subject}</p>
                           <p className="text-sm text-green-700 mt-1">{task?.data?.smtp?.auth?.user || task?.data?.sender_email}</p>
 
                           {expandedTask === task.id && (
